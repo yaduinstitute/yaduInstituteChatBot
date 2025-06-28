@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YADU SIR - AI Assistant</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark Theme (Default) */
+            --text-color: #e0e0e0;
+            --subheading-color: #a0aec0;
+            --placeholder-color: #718096;
+            --primary-bg: #0f0c29;
+            --secondary-color: rgba(255, 255, 255, 0.05);
+            --secondary-hover-color: rgba(255, 255, 255, 0.1);
+            --accent-color: #00f5ff;
+            --accent-hover: #00e4ff;
+            --neon-glow: #00f5ff;
+            --bot-avatar-bg: #1a1a2e;
+            --user-bubble: #0099cc;
+            --user-text: #0a0e27;
+            --border-radius: 16px;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --chat-shadow: 0 4px 30px rgba(0, 245, 255, 0.1);
+            --cyber-font: 'Orbitron', sans-serif;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme */
+            --text-color: #010104;
+            --subheading-color: #0c1119;
+            --placeholder-color: #28292b;
+            --primary-bg: linear-gradient(to bottom right, #f7c4ff, #f7cbe1);
+
+            --secondary-color: rgba(0, 0, 0, 0.05);
+            --secondary-hover-color: rgba(0, 0, 0, 0.1);
+            --accent-color: #00d4ff;
+            --accent-hover: #0bc5ea;
+            --neon-glow:    #00d4ff;
+            --bot-avatar-bg: #e9ecef;
+            --user-bubble: #0bc5ea;
+            --user-text: #ffffff;
+            --glass-bg: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", sans-serif;
+        }
+
+        body {
+            color: var(--text-color);
+            background: var(--primary-bg);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Main Container */
+        .container {
+            overflow-y: auto;
+            padding: 20px 0 100px;
+            max-height: calc(100vh - 120px);
+            scrollbar-width: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .container::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        /* App Header */
+        .app {
+            margin-top: 1vh;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .app::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-glow), transparent);
+        }
+
+        .app .heading {
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 800;
+            font-family: var(--cyber-font);
+            color: var(--neon-glow);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .app .sub-heading {
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            color: var(--subheading-color);
+            font-weight: 300;
+        }
+
+        /* Suggestions */
+        .suggestion {
+            display: flex;
+            gap: 15px;
+            margin-top: 3vh;
+            list-style: none;
+            overflow-x: auto;
+            padding: 10px 0;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .suggestion-list {
+            min-width: 250px;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+
+        .suggestion-list:hover {
+            transform: translateY(-3px);
+            border-color: var(--neon-glow);
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.1);
+        }
+
+        .suggestion-list .text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-list span {
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            align-self: flex-end;
+            font-size: 1.1rem;
+            color: var(--neon-glow);
+        }
+
+        /* Chat Messages */
+        .chats-container {
+            display: flex;
+            gap: 15px;
+            flex-direction: column;
+            padding: 15px 0;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: var(--bot-avatar-bg);
+            border: 1px solid var(--neon-glow);
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message-text {
+            padding: 12px 16px;
+            word-wrap: break-word;
+            white-space: pre-line;
+            border-radius: var(--border-radius);
+            max-width: 85%;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .bot-message .message-text {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+            /* align-self: flex-end; */
+        }
+
+        .user-message .message-text {
+            background: var(--user-bubble);
+            color: var(--user-text);
+            border-radius: 16px 16px 4px 16px;
+        }
+
+        /* Prompt Container */
+        .prompt-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-bg);
+            border-top: 1px solid var(--glass-border);
+            z-index: 10;
+            transition: background-color 0.3s ease;
+        }
+
+        .prompt-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .prompt-form {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .prompt-form:focus-within {
+            border-color: var(--neon-glow);
+            box-shadow: 0 0 0 2px rgba(0, 245, 255, 0.1);
+        }
+
+        .prompt-input {
+            flex: 1;
+            background: none;
+            outline: none;
+            border: none;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            color: var(--text-color);
+        }
+
+        .prompt-input::placeholder {
+            color: var(--placeholder-color);
+            font-weight: 400;
+        }
+
+        .prompt-actions {
+            display: flex;
+            gap: 4px;
+            margin-right: 4px;
+        }
+
+        .prompt-actions button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            color: var(--text-color);
+            font-size: 1rem;
+            background: var(--secondary-hover-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .prompt-actions button:hover {
+            background: var(--secondary-color);
+        }
+
+        #send-prompt-btn {
+            background: var(--accent-color);
+            color: #000;
+            display: none;
+        }
+
+        #send-prompt-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Control Buttons */
+        #theme-toggle-btn,
+        #clear-chat-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        #theme-toggle-btn:hover,
+        #clear-chat-btn:hover {
+            border-color: var(--neon-glow);
+            transform: scale(1.05);
+        }
+
+        /* Loading Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 8px 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--neon-glow);
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-3px); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 15px 0 90px;
+                max-height: calc(100vh - 105px);
+            }
+            
+            .prompt-wrapper {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .suggestion {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 0;
+            }
+            
+            .suggestion-list {
+                min-width: 100%;
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .message-text {
+                max-width: 90%;
+                font-size: 0.9rem;
+                padding: 10px 14px;
+            }
+            
+            .avatar {
+                height: 36px;
+                width: 36px;
+            }
+            
+            .prompt-container {
+                padding: 10px;
+            }
+            
+            .prompt-input {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+            
+            .prompt-actions button {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+            
+            #theme-toggle-btn,
+            #clear-chat-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app .heading {
+                font-size: 1.8rem;
+            }
+            
+            .app .sub-heading {
+                font-size: 0.85rem;
+            }
+            
+            .suggestion-list .text {
+                font-size: 0.85rem;
+            }
+            
+            .message-text {
+                font-size: 0.85rem;
+                max-width: 85%;
+            }
+            
+            .prompt-input {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- App Header -->
+        <header class="app">
+            <h1 class="heading">YADU Institute OF Technology</h1>
+            <h2 class="sub-heading">Director Jitendra yadav</h2>
+        </header>
+
+        <!-- Suggestion list -->
+        <ul class="suggestion">
+            <li class="suggestion-list">
+                <p class="text">Design a cyberpunk cityscape with neon lights and flying cars</p>
+                <span class="material-symbols-rounded">auto_awesome</span>
+            </li>
+            <li class="suggestion-list">
+                <p class="text">Explain quantum computing using simple analogies</p>
+                <span class="material-symbols-rounded">psychology</span>
+            </li>
+            <li class="suggestion-list">
+                <p class="text">Generate a futuristic UI concept for a holographic display</p>
+                <span class="material-symbols-rounded">design_services</span>
+            </li>
+            <li class="suggestion-list">
+                <p class="text">Create a cybernetic workout plan with biofeedback</p>
+                <span class="material-symbols-rounded">fitness_center</span>
+            </li>
+        </ul>
+
+        <!-- Chat container -->
+        <div class="chats-container">
+            <div class="message bot-message">
+                <div class="avatar">
+                    <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+                </div>
+                <p class="message-text">SYSTEM INITIALIZED... READY FOR USER INPUT</p>
+            </div>
+            <div class="message bot-message">
+                <div class="avatar"><img src="./image/yaduSir.png" alt="Yadu Sir" height="50px"></div>
+                <p class="message-text">Welcome to YADU Institute AI interface. How may I assist you today?</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Container -->
+    <div class="prompt-container">
+        <div class="prompt-wrapper">
+            <form class="prompt-form">
+                <input type="text" class="prompt-input" placeholder="Enter your command..." required>
+                <div class="prompt-actions">
+                    <button type="button" id="add-file-btn" class="material-symbols-rounded" title="Attach file" onclick="addfile()">attach_file</button>
+                    <button type="submit" id="send-prompt-btn" class="material-symbols-rounded" title="Send message">send</button>
+                </div>
+            </form>
+
+            <button id="theme-toggle-btn" class="material-symbols-rounded" title="Toggle theme">dark_mode</button>
+            <button id="clear-chat-btn" class="material-symbols-rounded" title="Clear chat">refresh</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatsContainer = document.querySelector(".chats-container");
+        const promptForm = document.querySelector(".prompt-form");
+        const promptInput = document.querySelector(".prompt-input");
+        const themeToggleBtn = document.getElementById("theme-toggle-btn");
+        const clearChatBtn = document.getElementById("clear-chat-btn");
+        const suggestionItems = document.querySelectorAll(".suggestion-list");
+        const sendPromptBtn = document.getElementById("send-prompt-btn");
+        const body = document.body;
+
+        // file add
+        function addfile()
+        {
+            alert("update later");
+        }
+        // API Setup
+        const API_KEY = "AIzaSyDVSnpY_yUHaz5ZO1kSBV2gjC7r8I7yzys";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        // State
+        let userMessage = "";
+        let isProcessing = false;
+
+        // Function to create message elements
+        const createMessageElement = (content, ...classes) => {
+            const div = document.createElement("div");
+            div.classList.add("message", ...classes);
+            div.innerHTML = content;
+            return div;
+        };
+
+        // Typing effect using requestAnimationFrame
+        const typingEffect = (text, textElement) => {
+            textElement.textContent = "";
+            let i = 0;
+            const type = () => {
+                if (i < text.length) {
+                    textElement.textContent += text.charAt(i);
+                    i++;
+                    requestAnimationFrame(type);
+                }
+            };
+            requestAnimationFrame(type);
+        };
+
+        // Add bot message function
+        const addBotMessage = (message) => {
+            const botMsgHTML = `
+                <div class="avatar">
+                    <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+                </div>
+                <p class="message-text">${message}</p>
+            `;
+            const botMsgDiv = createMessageElement(botMsgHTML, "bot-message");
+            chatsContainer.appendChild(botMsgDiv);
+            chatsContainer.scrollTop = chatsContainer.scrollHeight;
+            return botMsgDiv;
+        };
+
+        // Show typing indicator
+        const showTypingIndicator = () => {
+            const typingHTML = `
+                <div class="avatar">
+                    <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+                </div>
+                <div class="message-text">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            const typingDiv = createMessageElement(typingHTML, "bot-message");
+            chatsContainer.appendChild(typingDiv);
+            chatsContainer.scrollTop = chatsContainer.scrollHeight;
+            return typingDiv;
+        };
+
+        // Generate response from API
+        const generateResponse = async () => {
+            const typingDiv = showTypingIndicator();
+            
+            try {
+                isProcessing = true;
+                
+                const requestData = {
+                    contents: [{
+                        parts: [{ text: userMessage }]
+                    }]
+                };
+
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error("API request failed");
+                }
+
+                const data = await response.json();
+                chatsContainer.removeChild(typingDiv);
+                
+                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const responseText = data.candidates[0].content.parts[0].text.trim();
+                    const responseDiv = addBotMessage("");
+                    typingEffect(responseText, responseDiv.querySelector(".message-text"));
+                } else {
+                    throw new Error("Invalid response format");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                addBotMessage("Sorry, I encountered an error. Please try again.");
+            } finally {
+                isProcessing = false;
+                promptInput.disabled = false;
+                promptInput.focus();
+            }
+        };
+
+        // Handle form submission
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            userMessage = promptInput.value.trim();
+            if (!userMessage || isProcessing) return;
+
+            promptInput.value = "";
+            promptInput.disabled = true;
+
+            // Add user message
+            const userMsgHTML = `<p class="message-text">${userMessage}</p>`;
+            const userMsgDiv = createMessageElement(userMsgHTML, "user-message");
+            chatsContainer.appendChild(userMsgDiv);
+            chatsContainer.scrollTop = chatsContainer.scrollHeight;
+
+            // Generate response
+            generateResponse();
+        };
+
+        // Handle suggestion clicks
+        const handleSuggestionClick = (e) => {
+            const suggestionText = e.currentTarget.querySelector('.text').textContent;
+            promptInput.value = suggestionText;
+            promptInput.focus();
+            sendPromptBtn.style.display = 'flex';
+        };
+
+        // Theme management
+        let isDarkTheme = localStorage.getItem('theme') !== 'light';
+
+        function updateTheme() {
+            if (isDarkTheme) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggleBtn.textContent = 'light_mode';
+                body.style.backgroundColor = '#0f0c29';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggleBtn.textContent = 'dark_mode';
+                body.style.backgroundColor = '#f8f9fa';
+            }
+            localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+        }
+
+        // Clear chat
+        const clearChat = () => {
+            if (isProcessing) return;
+            chatsContainer.innerHTML = '';
+            addBotMessage("Welcome to YADU Institute AI interface. How may I assist you today?");
+        };
+
+        // Initialize
+        const init = () => {
+            // Set initial theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                isDarkTheme = false;
+            }
+            updateTheme();
+
+            // Event listeners
+            promptForm.addEventListener("submit", handleFormSubmit);
+            themeToggleBtn.addEventListener('click', () => {
+                isDarkTheme = !isDarkTheme;
+                updateTheme();
+            });
+            clearChatBtn.addEventListener('click', clearChat);
+            
+            // Suggestion click handlers
+            suggestionItems.forEach(item => {
+                item.addEventListener('click', handleSuggestionClick);
+            });
+
+            // Show send button when typing
+            promptInput.addEventListener('input', () => {
+                sendPromptBtn.style.display = promptInput.value.trim() ? 'flex' : 'none';
+            });
+
+            // Focus input on load
+            promptInput.focus();
+        };
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
