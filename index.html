@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YADU SIR - AI Assistant</title>
     <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -41,7 +43,7 @@
             --secondary-hover-color: rgba(0, 0, 0, 0.1);
             --accent-color: #00d4ff;
             --accent-hover: #0bc5ea;
-            --neon-glow:    #00d4ff;
+            --neon-glow: #00d4ff;
             --bot-avatar-bg: #e9ecef;
             --user-bubble: #0bc5ea;
             --user-text: #ffffff;
@@ -76,8 +78,8 @@
             z-index: 2;
         }
 
-        .container::-webkit-scrollbar { 
-            display: none; 
+        .container::-webkit-scrollbar {
+            display: none;
         }
 
         /* App Header */
@@ -351,13 +353,31 @@
             animation: typingAnimation 1.4s infinite ease-in-out;
         }
 
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
 
         @keyframes typingAnimation {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-            30% { transform: translateY(-3px); opacity: 1; }
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.6;
+            }
+
+            30% {
+                transform: translateY(-3px);
+                opacity: 1;
+            }
         }
 
         /* Responsive Design */
@@ -365,56 +385,56 @@
             body {
                 padding: 15px;
             }
-            
+
             .container {
                 padding: 15px 0 90px;
                 max-height: calc(100vh - 105px);
             }
-            
+
             .prompt-wrapper {
                 flex-direction: column;
                 gap: 6px;
             }
-            
+
             .suggestion {
                 flex-direction: column;
                 align-items: center;
                 gap: 10px;
                 padding: 10px 0;
             }
-            
+
             .suggestion-list {
                 min-width: 100%;
                 max-width: 100%;
                 width: 100%;
             }
-            
+
             .message-text {
                 max-width: 90%;
                 font-size: 0.9rem;
                 padding: 10px 14px;
             }
-            
+
             .avatar {
                 height: 36px;
                 width: 36px;
             }
-            
+
             .prompt-container {
                 padding: 10px;
             }
-            
+
             .prompt-input {
                 font-size: 0.9rem;
                 padding: 8px 12px;
             }
-            
+
             .prompt-actions button {
                 width: 32px;
                 height: 32px;
                 font-size: 0.9rem;
             }
-            
+
             #theme-toggle-btn,
             #clear-chat-btn {
                 width: 36px;
@@ -427,20 +447,20 @@
             .app .heading {
                 font-size: 1.8rem;
             }
-            
+
             .app .sub-heading {
                 font-size: 0.85rem;
             }
-            
+
             .suggestion-list .text {
                 font-size: 0.85rem;
             }
-            
+
             .message-text {
                 font-size: 0.85rem;
                 max-width: 85%;
             }
-            
+
             .prompt-input {
                 font-size: 0.85rem;
             }
@@ -497,8 +517,10 @@
             <form class="prompt-form">
                 <input type="text" class="prompt-input" placeholder="Enter your command..." required>
                 <div class="prompt-actions">
-                    <button type="button" id="add-file-btn" class="material-symbols-rounded" title="Attach file" onclick="addfile()">attach_file</button>
-                    <button type="submit" id="send-prompt-btn" class="material-symbols-rounded" title="Send message">send</button>
+                    <button type="button" id="add-file-btn" class="material-symbols-rounded" title="Attach file"
+                        onclick="addfile()">attach_file</button>
+                    <button type="submit" id="send-prompt-btn" class="material-symbols-rounded"
+                        title="Send message">send</button>
                 </div>
             </form>
 
@@ -518,14 +540,21 @@
         const sendPromptBtn = document.getElementById("send-prompt-btn");
         const body = document.body;
 
+        // Track ongoing requests and animations
+        let currentRequestController = null;
+        let currentTypingAnimationId = null;
+        let currentTypingIndicator = null;
+        let currentResponseDiv = null;
+
         // file add
-        function addfile()
-        {
+        function addfile() {
             alert("update later");
         }
+
         // API Setup
         const API_KEY = "AIzaSyDVSnpY_yUHaz5ZO1kSBV2gjC7r8I7yzys";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
         // State
         let userMessage = "";
         let isProcessing = false;
@@ -539,27 +568,35 @@
         };
 
         // Typing effect using requestAnimationFrame
-        const typingEffect = (text, textElement) => {
-            textElement.textContent = "";
+        const typingEffect = (text, textElement, controller) => {
             let i = 0;
+            let animationId;
+
             const type = () => {
+                // Stop if the request was aborted
+                if (controller.signal.aborted) {
+                    return;
+                }
+
                 if (i < text.length) {
                     textElement.textContent += text.charAt(i);
                     i++;
-                    requestAnimationFrame(type);
+                    animationId = requestAnimationFrame(type);
                 }
             };
-            requestAnimationFrame(type);
+
+            animationId = requestAnimationFrame(type);
+            return animationId;
         };
 
         // Add bot message function
         const addBotMessage = (message) => {
             const botMsgHTML = `
-                <div class="avatar">
-                    <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
-                </div>
-                <p class="message-text">${message}</p>
-            `;
+            <div class="avatar">
+                <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+            </div>
+            <p class="message-text">${message}</p>
+        `;
             const botMsgDiv = createMessageElement(botMsgHTML, "bot-message");
             chatsContainer.appendChild(botMsgDiv);
             chatsContainer.scrollTop = chatsContainer.scrollHeight;
@@ -568,31 +605,54 @@
 
         // Show typing indicator
         const showTypingIndicator = () => {
+            // Remove any existing typing indicator
+            if (currentTypingIndicator) {
+                chatsContainer.removeChild(currentTypingIndicator);
+                currentTypingIndicator = null;
+            }
+
             const typingHTML = `
-                <div class="avatar">
-                    <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+            <div class="avatar">
+                <img src="./image/yaduSir.png" alt="Yadu Sir" height="50px">
+            </div>
+            <div class="message-text">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
                 </div>
-                <div class="message-text">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
+            </div>
+        `;
             const typingDiv = createMessageElement(typingHTML, "bot-message");
             chatsContainer.appendChild(typingDiv);
             chatsContainer.scrollTop = chatsContainer.scrollHeight;
+            currentTypingIndicator = typingDiv;
             return typingDiv;
         };
 
         // Generate response from API
         const generateResponse = async () => {
+            // Cancel any ongoing request and typing animation
+            if (currentRequestController) {
+                currentRequestController.abort();
+            }
+            if (currentTypingAnimationId) {
+                cancelAnimationFrame(currentTypingAnimationId);
+                currentTypingAnimationId = null;
+            }
+            if (currentTypingIndicator) {
+                chatsContainer.removeChild(currentTypingIndicator);
+                currentTypingIndicator = null;
+            }
+
             const typingDiv = showTypingIndicator();
-            
+
             try {
                 isProcessing = true;
-                
+
+                const controller = new AbortController();
+                currentRequestController = controller;
+
                 const requestData = {
                     contents: [{
                         parts: [{ text: userMessage }]
@@ -602,26 +662,36 @@
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal
                 });
 
-                if (!response.ok) {
-                    throw new Error("API request failed");
-                }
+                if (!response.ok) throw new Error("API request failed");
 
                 const data = await response.json();
-                chatsContainer.removeChild(typingDiv);
-                
-                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const responseText = data.candidates[0].content.parts[0].text.trim();
-                    const responseDiv = addBotMessage("");
-                    typingEffect(responseText, responseDiv.querySelector(".message-text"));
-                } else {
-                    throw new Error("Invalid response format");
+
+                // Only proceed if this is still the current request
+                if (!controller.signal.aborted) {
+                    chatsContainer.removeChild(typingDiv);
+                    currentTypingIndicator = null;
+
+                    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        const responseText = data.candidates[0].content.parts[0].text.trim();
+                        currentResponseDiv = addBotMessage("");
+                        currentTypingAnimationId = typingEffect(
+                            responseText,
+                            currentResponseDiv.querySelector(".message-text"),
+                            controller
+                        );
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
                 }
             } catch (error) {
-                console.error("Error:", error);
-                addBotMessage("Sorry, I encountered an error. Please try again.");
+                if (error.name !== 'AbortError') {
+                    console.error("Error:", error);
+                    addBotMessage("Sorry, I encountered an error. Please try again.");
+                }
             } finally {
                 isProcessing = false;
                 promptInput.disabled = false;
@@ -633,7 +703,7 @@
         const handleFormSubmit = async (e) => {
             e.preventDefault();
             userMessage = promptInput.value.trim();
-            if (!userMessage || isProcessing) return;
+            if (!userMessage) return;
 
             promptInput.value = "";
             promptInput.disabled = true;
@@ -674,9 +744,27 @@
 
         // Clear chat
         const clearChat = () => {
-            if (isProcessing) return;
+            if (currentRequestController) {
+                currentRequestController.abort();
+                currentRequestController = null;
+            }
+            if (currentTypingAnimationId) {
+                cancelAnimationFrame(currentTypingAnimationId);
+                currentTypingAnimationId = null;
+            }
+            if (currentTypingIndicator) {
+                chatsContainer.removeChild(currentTypingIndicator);
+                currentTypingIndicator = null;
+            }
+            if (currentResponseDiv) {
+                chatsContainer.removeChild(currentResponseDiv);
+                currentResponseDiv = null;
+            }
+            isProcessing = false;
             chatsContainer.innerHTML = '';
             addBotMessage("Welcome to YADU Institute AI interface. How may I assist you today?");
+            promptInput.disabled = false;
+            promptInput.focus();
         };
 
         // Initialize
@@ -695,7 +783,7 @@
                 updateTheme();
             });
             clearChatBtn.addEventListener('click', clearChat);
-            
+
             // Suggestion click handlers
             suggestionItems.forEach(item => {
                 item.addEventListener('click', handleSuggestionClick);
@@ -713,5 +801,7 @@
         // Start the app
         init();
     </script>
+
 </body>
+
 </html>
